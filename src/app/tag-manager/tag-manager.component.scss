@@ -3,6 +3,7 @@
 .tag-container {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 
   .tag-list-container.new {
     border: 1px dashed $secondary_border_color;

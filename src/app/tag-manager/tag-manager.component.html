@@ -12,7 +12,7 @@
         </div>
     </div>
     <div class="tag-list-container new">
-        <form (ngSubmit)="addTag">
+        <form (ngSubmit)="addTag()">
             <input type="text" id="newTagName" name="newTagName" [(ngModel)]="newTagName" />
             <button type="submit" class="float-right">Add</button>
         </form>
