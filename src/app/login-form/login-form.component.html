@@ -1,0 +1,16 @@
+<form (ngSubmit)="onLogin()" name="login-form">
+    <fieldset>
+        <label for="homeserverUrl">Homeserver URL</label>
+        <input type="text" id="homeserverUrl" name="homeserverUrl" [(ngModel)]="homeserverUrl"
+               placeholder="https://matrix.org"/>
+
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" [(ngModel)]="username"/>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" [(ngModel)]="password"/>
+    </fieldset>
+
+    <p class="text-danger" *ngIf="loginError">{{loginError}}</p>
+    <button type="submit" [disabled]="isLoggingIn">Login</button>
+</form>

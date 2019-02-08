@@ -1,0 +1,6 @@
+<div class="app">
+    <h1>matrix-tag-manager</h1>
+
+    <app-login-form class="login" *ngIf="!isLoggedIn"></app-login-form>
+    <app-tag-manager class="tags" *ngIf="isLoggedIn">Logged in</app-tag-manager>
+</div>

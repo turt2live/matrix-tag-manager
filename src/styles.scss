@@ -1,1 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css?family=Muli:300|Open+Sans:300&subset=cyrillic,cyrillic-ext,greek,greek-ext,latin-ext,vietnamese');
+@import "vars";
+@import "../node_modules/milligram/dist/milligram.min.css";
+
+body, html {
+  font-family: 'Muli', 'Open Sans', sans-serif;
+}
+
+.text-danger {
+  color: $danger-fg-color;
+}
