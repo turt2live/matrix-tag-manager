@@ -1,0 +1,35 @@
+@import "../../vars";
+
+.tag-container {
+  display: flex;
+  flex-direction: row;
+
+  .tag-list-container.new {
+    border: 1px dashed $secondary_border_color;
+  }
+
+  .tag-list-container {
+    min-width: 320px;
+    max-width: 320px;
+    padding: 10px;
+    border: 1px solid $primary_border_color;
+    border-radius: 4px;
+    margin: 15px;
+    flex-grow: 1;
+
+    h4 {
+      text-align: center;
+    }
+
+    .tag-list {
+      width: 100%;
+      min-height: 200px;
+      max-height: 400px;
+      overflow: auto;
+
+      .room-tile {
+        cursor: move;
+      }
+    }
+  }
+}

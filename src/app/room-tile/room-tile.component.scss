@@ -5,7 +5,7 @@
   border-radius: 4px;
   display: inline-block;
   margin: 5px;
-  width: 320px;
+  width: calc(100% - 10px); // 5px margin
 
   .avatar-placeholder, .avatar {
     width: 36px;
