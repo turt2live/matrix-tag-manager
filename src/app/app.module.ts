@@ -6,12 +6,14 @@ import { LoginFormComponent } from './login-form/login-form.component';
 import { HttpClientModule } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { TagManagerComponent } from './tag-manager/tag-manager.component';
+import { RoomTileComponent } from './room-tile/room-tile.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         LoginFormComponent,
-        TagManagerComponent
+        TagManagerComponent,
+        RoomTileComponent
     ],
     imports: [
         BrowserModule,

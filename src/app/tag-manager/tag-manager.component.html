@@ -2,3 +2,7 @@
   Welcome, {{userId}}
   <button class="button-clear" (click)="logout()">Logout</button>
 </div>
+<div>
+  <p *ngIf="loadingRooms">Loading rooms...</p>
+  <app-room-tile *ngFor="let room of joinedRooms" [roomId]="room"></app-room-tile>
+</div>
