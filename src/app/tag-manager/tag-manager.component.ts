@@ -19,4 +19,7 @@ export class TagManagerComponent implements OnInit {
         });
     }
 
+    public logout() {
+        this.auth.logout();
+    }
 }

@@ -13,6 +13,7 @@ export interface MatrixUser {
     isLoggedIn: boolean;
     userId: string;
     accessToken: string;
+    hsUrl: string;
 }
 
 @Injectable({
@@ -20,36 +21,42 @@ export interface MatrixUser {
 })
 export class MatrixAuthService {
 
-    private mtxUser: BehaviorSubject<MatrixUser> = new BehaviorSubject<MatrixUser>({
+    private mtxLoginState: BehaviorSubject<MatrixUser> = new BehaviorSubject<MatrixUser>({
         isLoggedIn: false,
         userId: null,
         accessToken: null,
+        hsUrl: null,
     });
 
     public get loginState(): Observable<MatrixUser> {
-        return this.mtxUser.asObservable();
+        return this.mtxLoginState.asObservable();
     }
 
     constructor(private http: HttpClient) {
         const storedUserId = localStorage.getItem("mx_user_id");
         const storedAccessToken = localStorage.getItem("mx_access_token");
+        const storedHsUrl = localStorage.getItem("mx_homeserver_url");
 
-        if (storedUserId && storedAccessToken) {
-            this.mtxUser.next({
+        if (storedUserId && storedAccessToken && storedHsUrl) {
+            this.mtxLoginState.next({
                 isLoggedIn: true,
                 userId: storedUserId,
                 accessToken: storedAccessToken,
+                hsUrl: storedHsUrl,
             });
         }
 
-        this.mtxUser.subscribe(state => {
-            localStorage.setItem("mx_user_id", state.userId);
-            localStorage.setItem("mx_access_token", state.accessToken);
+        this.mtxLoginState.subscribe(state => {
+            if (state.userId) localStorage.setItem("mx_user_id", state.userId);
+            if (state.accessToken) localStorage.setItem("mx_access_token", state.accessToken);
+            if (state.hsUrl) localStorage.setItem("mx_homeserver_url", state.hsUrl);
         });
     }
 
     public login(hsUrl: string, username: string, password: string): Observable<MatrixLoginResponse> {
-        const obs = this.http.post<MatrixLoginResponse>(`${stripTail(hsUrl)}/_matrix/client/r0/login`, {
+        hsUrl = stripTail(hsUrl);
+
+        const obs = this.http.post<MatrixLoginResponse>(`${hsUrl}/_matrix/client/r0/login`, {
             type: "m.login.password",
             identifier: {
                 type: "m.id.user",
@@ -60,13 +67,29 @@ export class MatrixAuthService {
         });
 
         obs.subscribe(r => {
-            this.mtxUser.next({
+            this.mtxLoginState.next({
                 isLoggedIn: true,
                 userId: r.user_id,
                 accessToken: r.access_token,
+                hsUrl: hsUrl,
             });
         });
 
         return obs;
+    }
+
+    public logout() {
+        localStorage.clear();
+        this.http.post(`${this.mtxLoginState.value.hsUrl}/_matrix/client/r0/logout`, {}, {
+            headers: {
+                "Authorization": `Bearer ${this.mtxLoginState.value.accessToken}`,
+            },
+        });
+        this.mtxLoginState.next({
+            isLoggedIn: false,
+            userId: null,
+            accessToken: null,
+            hsUrl: null,
+        })
     }
 }
