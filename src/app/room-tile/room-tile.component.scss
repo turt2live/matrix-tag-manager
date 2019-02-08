@@ -1,0 +1,31 @@
+@import "../../vars";
+
+.room-tile {
+  border: 1px solid $primary_border_color;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 5px;
+  width: 320px;
+
+  .avatar-placeholder, .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 5px 10px 5px 5px;
+  }
+
+  .avatar-placeholder {
+    background-color: $placeholder-avatar-color;
+  }
+
+  .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: calc(100% - 56px); // 36px avatar + margins
+    display: inline-block;
+    vertical-align: middle;
+  }
+}

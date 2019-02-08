@@ -24,6 +24,17 @@ export class MatrixRoomsService {
             headers: {
                 "Authorization": `Bearer ${this.accessToken}`,
             },
-        }).pipe(map(r => r["joined_rooms"]));
+        }).pipe(map(r => r["joined_rooms"], this.auth.logoutIfUnauthorized()));
+    }
+
+    public getStateEvent(roomId: string, eventType: string, stateKey: string): Observable<any> {
+        roomId = encodeURIComponent(roomId);
+        eventType = encodeURIComponent(eventType);
+        stateKey = encodeURIComponent(stateKey);
+        return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/state/${eventType}/${stateKey}`, {
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
+        }).pipe(this.auth.logoutIfUnauthorized());
     }
 }

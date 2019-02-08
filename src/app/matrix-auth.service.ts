@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { stripTail } from "./http.util";
-import { BehaviorSubject, Observable } from "rxjs";
+import { BehaviorSubject, MonoTypeOperatorFunction, Observable, OperatorFunction } from "rxjs";
+import { catchError } from "rxjs/operators";
 
 export interface MatrixLoginResponse {
     user_id: string;
@@ -21,7 +22,7 @@ export interface MatrixUser {
 })
 export class MatrixAuthService {
 
-    private mtxLoginState: BehaviorSubject<MatrixUser> = new BehaviorSubject<MatrixUser>({
+    private loginState$: BehaviorSubject<MatrixUser> = new BehaviorSubject<MatrixUser>({
         isLoggedIn: false,
         userId: null,
         accessToken: null,
@@ -29,7 +30,7 @@ export class MatrixAuthService {
     });
 
     public get loginState(): Observable<MatrixUser> {
-        return this.mtxLoginState.asObservable();
+        return this.loginState$.asObservable();
     }
 
     constructor(private http: HttpClient) {
@@ -38,7 +39,7 @@ export class MatrixAuthService {
         const storedHsUrl = localStorage.getItem("mx_homeserver_url");
 
         if (storedUserId && storedAccessToken && storedHsUrl) {
-            this.mtxLoginState.next({
+            this.loginState$.next({
                 isLoggedIn: true,
                 userId: storedUserId,
                 accessToken: storedAccessToken,
@@ -46,7 +47,7 @@ export class MatrixAuthService {
             });
         }
 
-        this.mtxLoginState.subscribe(state => {
+        this.loginState$.subscribe(state => {
             if (state.userId) localStorage.setItem("mx_user_id", state.userId);
             if (state.accessToken) localStorage.setItem("mx_access_token", state.accessToken);
             if (state.hsUrl) localStorage.setItem("mx_homeserver_url", state.hsUrl);
@@ -67,7 +68,7 @@ export class MatrixAuthService {
         });
 
         obs.subscribe(r => {
-            this.mtxLoginState.next({
+            this.loginState$.next({
                 isLoggedIn: true,
                 userId: r.user_id,
                 accessToken: r.access_token,
@@ -80,16 +81,25 @@ export class MatrixAuthService {
 
     public logout() {
         localStorage.clear();
-        this.http.post(`${this.mtxLoginState.value.hsUrl}/_matrix/client/r0/logout`, {}, {
+        this.http.post(`${this.loginState$.value.hsUrl}/_matrix/client/r0/logout`, {}, {
             headers: {
-                "Authorization": `Bearer ${this.mtxLoginState.value.accessToken}`,
+                "Authorization": `Bearer ${this.loginState$.value.accessToken}`,
             },
         });
-        this.mtxLoginState.next({
+        this.loginState$.next({
             isLoggedIn: false,
             userId: null,
             accessToken: null,
             hsUrl: null,
         })
+    }
+
+    public logoutIfUnauthorized<T>(): MonoTypeOperatorFunction<T> {
+        return catchError<T>(e => {
+            if (e.status === 401) {
+                this.logout();
+            }
+            throw e;
+        });
     }
 }

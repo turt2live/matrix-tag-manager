@@ -1,1 +1,5 @@
-<div>Tile for {{roomId}}</div>
+<div class="room-tile">
+  <img class="avatar" [src]="avatarUrl" *ngIf="avatarUrl" alt="avatar" />
+  <div class="avatar-placeholder" *ngIf="!avatarUrl"></div>
+  <span class="name" [title]="roomId">{{displayName}}</span>
+</div>
