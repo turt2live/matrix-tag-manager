@@ -73,11 +73,36 @@ export class MatrixRoomsService {
     }
 
     public getDirectChats(): Observable<IDirectChats> {
-        return this.http.get<IDirectChats>(`${this.homeserverUrl}/_matrix/client/r0/user/${this.userId}/account_data/m.direct`, {
+        const userId = encodeURIComponent(this.userId);
+        return this.http.get<IDirectChats>(`${this.homeserverUrl}/_matrix/client/r0/user/${userId}/account_data/m.direct`, {
             headers: {
                 "Authorization": `Bearer ${this.accessToken}`,
             },
         }).pipe(this.auth.logoutIfUnauthorized());
+    }
+
+    public setDirectChats(chats: IDirectChats): Observable<any> {
+        const userId = encodeURIComponent(this.userId);
+        return this.http.put(`${this.homeserverUrl}/_matrix/client/r0/user/${userId}/account_data/m.direct`, chats, {
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
+        }).pipe(this.auth.logoutIfUnauthorized());
+    }
+
+    public getEffectiveJoinedMembers(roomId: string): Observable<string[]> {
+        roomId = encodeURIComponent(roomId);
+        return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/members`, {
+            params: {
+                not_membership: ['leave', 'ban'],
+            },
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
+        }).pipe(this.auth.logoutIfUnauthorized(), map(r => {
+            if (!r['chunk']) return [];
+            return r['chunk'].map(e => e['state_key']).filter(u => !!u);
+        }));
     }
 
     public getRooms(): Observable<IRooms> {
