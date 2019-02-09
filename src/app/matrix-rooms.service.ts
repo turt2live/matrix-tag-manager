@@ -17,6 +17,10 @@ export interface IDirectChats {
     [userId: string]: string[];
 }
 
+export interface ITaggedRoom {
+    [tagName: string]: { order: number };
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -31,6 +35,40 @@ export class MatrixRoomsService {
             this.homeserverUrl = loginState.hsUrl;
             this.accessToken = loginState.accessToken;
             this.userId = loginState.userId;
+        });
+    }
+
+    public getTagsOnRoom(roomId: string): Observable<ITaggedRoom> {
+        const userId = encodeURIComponent(this.userId);
+        roomId = encodeURIComponent(roomId);
+        return this.http.get<IDirectChats>(`${this.homeserverUrl}/_matrix/client/r0/user/${userId}/rooms/${roomId}/tags`, {
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
+        }).pipe(this.auth.logoutIfUnauthorized(), map(r => r['tags'] || {}));
+    }
+
+    public addTagToRoom(roomId: string, tagName: string, order: number): Observable<any> {
+        const userId = encodeURIComponent(this.userId);
+        roomId = encodeURIComponent(roomId);
+        tagName = encodeURIComponent(tagName);
+        return this.http.put(`${this.homeserverUrl}/_matrix/client/r0/user/${userId}/rooms/${roomId}/tags/${tagName}`, {
+            order: order,
+        }, {
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
+        });
+    }
+
+    public removeTagFromRoom(roomId: string, tagName: string): Observable<any> {
+        const userId = encodeURIComponent(this.userId);
+        roomId = encodeURIComponent(roomId);
+        tagName = encodeURIComponent(tagName);
+        return this.http.delete(`${this.homeserverUrl}/_matrix/client/r0/user/${userId}/rooms/${roomId}/tags/${tagName}`, {
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
         });
     }
 

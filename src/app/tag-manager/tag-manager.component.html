@@ -10,16 +10,17 @@
 
 <div class="tag-container">
     <div class="tag-list-container" *ngFor="let tagName of tagNames">
+        <button type="button" class="float-right button-outline" [disabled]="isSaving"
+                *ngIf="isListChanged(tagName)" (click)="saveTag(tagName)">Save</button>
         <h4>{{tagName}}</h4>
-        <div class="tag-list" dragula="ROOM_TAGS"
-             [dragulaModel]="tags[tagName]" (dragulaModelChange)="setTaggedRooms(tagName, $event)">
+        <div class="tag-list" dragula="ROOM_TAGS" [(dragulaModel)]="tags[tagName]">
             <app-room-tile class="room-tile" *ngFor="let room of tags[tagName]" [room]="room"></app-room-tile>
         </div>
     </div>
     <div class="tag-list-container new">
         <form (ngSubmit)="addTag()">
             <input type="text" id="newTagName" name="newTagName" [(ngModel)]="newTagName" />
-            <button type="submit" class="float-right">Add</button>
+            <button type="submit" class="float-right button-outline">Add</button>
         </form>
     </div>
 </div>
