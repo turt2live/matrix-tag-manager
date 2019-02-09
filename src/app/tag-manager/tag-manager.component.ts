@@ -159,6 +159,25 @@ export class TagManagerComponent implements OnInit {
             }
         }
 
+        // Untag any rooms not currently in the list (but were previously)
+        const oldRoomIds = this.originalTags[tagName]
+            .map( r => r.roomId)
+            .filter(rid => !roomIds.includes(rid));
+        console.log(`Untagging ${oldRoomIds.length} from old tag lists`);
+        for (const oldRoomId of oldRoomIds) {
+            try {
+                console.log(`Untagging ${oldRoomId}`);
+                await this.rooms.removeTagFromRoom(oldRoomId, tagName).toPromise();
+
+                const idx = this.originalTags[tagName].findIndex(i => i.roomId === oldRoomId);
+                this.originalTags[tagName].splice(idx, 1);
+            } catch (e) {
+                console.error("Failed to set tag");
+                console.error(e);
+                // TODO: Dialog or toast or something
+            }
+        }
+
         this.isSaving = false;
         this.originalTags[tagName] = this.tags[tagName].map(r => r); // clone the list
     }
