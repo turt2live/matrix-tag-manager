@@ -13,6 +13,10 @@
         <button type="button" class="float-right button-outline" [disabled]="isSaving"
                 *ngIf="isListChanged(tagName)" (click)="saveTag(tagName)">Save</button>
         <h4>{{tagName}}</h4>
+        <small [ngPlural]="tags[tagName].length">
+            <ng-template ngPluralCase="=1">1 room</ng-template>
+            <ng-template ngPluralCase="other">{{tags[tagName].length}} rooms</ng-template>
+        </small>
         <div class="tag-list" dragula="ROOM_TAGS" [(dragulaModel)]="tags[tagName]">
             <app-room-tile class="room-tile" *ngFor="let room of tags[tagName]" [room]="room"></app-room-tile>
         </div>
