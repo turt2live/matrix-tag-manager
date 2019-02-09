@@ -3,9 +3,14 @@ import { MatrixAuthService } from "./matrix-auth.service";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
+import { MatrixRoom } from "./matrix-room";
 
 export interface IRoomTags {
     [tagName: string]: { order: number, roomId: string }[];
+}
+
+export interface IRooms {
+    [roomId: string]: MatrixRoom;
 }
 
 @Injectable({
@@ -23,23 +28,48 @@ export class MatrixRoomsService {
         });
     }
 
-    public getJoinedRooms(): Observable<string[]> {
-        return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/joined_rooms`, {
+    public getRooms(): Observable<IRooms> {
+        const filter = {
+            presence: {types: [], limit: 0},
+            account_data: {types: [], limit: 0},
+            room: {
+                ephemeral: {types: [], limit: 0},
+                state: {types: ['m.room.name', 'm.room.avatar']},
+                timeline: {types: [], limit: 0},
+                account_data: {types: [], limit: 0},
+            },
+        };
+        const encodedFilter = encodeURIComponent(JSON.stringify(filter));
+        return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/sync?filter=${encodedFilter}`, {
             headers: {
                 "Authorization": `Bearer ${this.accessToken}`,
             },
-        }).pipe(map(r => r["joined_rooms"], this.auth.logoutIfUnauthorized()));
-    }
+        }).pipe(this.auth.logoutIfUnauthorized(), map(r => {
+            if (!r['rooms'] || !r['rooms']['join']) return {};
 
-    public getStateEvent(roomId: string, eventType: string, stateKey: string): Observable<any> {
-        roomId = encodeURIComponent(roomId);
-        eventType = encodeURIComponent(eventType);
-        stateKey = encodeURIComponent(stateKey);
-        return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/state/${eventType}/${stateKey}`, {
-            headers: {
-                "Authorization": `Bearer ${this.accessToken}`,
-            },
-        }).pipe(this.auth.logoutIfUnauthorized());
+            const rooms = {};
+
+            const joinedRooms = r['rooms']['join'];
+            for (const roomId of Object.keys(joinedRooms)) {
+                const room = joinedRooms[roomId];
+                if (!room['state'] || !room['state']['events']) return;
+
+                let displayName: string = null;
+                let avatarMxc: string = null;
+                for (const event of room['state']['events']) {
+                    if (event['type'] === 'm.room.name' && event['content']) {
+                        displayName = event['content']['name'];
+                    }
+                    if (event['type'] === 'm.room.avatar' && event['content']) {
+                        avatarMxc = event['content']['url'];
+                    }
+                }
+
+                rooms[roomId] = {displayName, avatarMxc, roomId};
+            }
+
+            return rooms;
+        }));
     }
 
     public getTags(): Observable<IRoomTags> {

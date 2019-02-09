@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatrixAuthService } from "../matrix-auth.service";
 import { MatrixRoomsService } from "../matrix-rooms.service";
+import { MatrixRoom } from "../matrix-room";
 
 @Component({
     selector: 'app-tag-manager',
@@ -13,7 +14,7 @@ export class TagManagerComponent implements OnInit {
     public loadingRooms = true;
     public newTagName: string;
 
-    public tags: { [tagName: string]: string[] } = {
+    public tags: { [tagName: string]: MatrixRoom[] } = {
         "Favourites": [],
         "Default": [],
         "Low Priority": [],
@@ -30,24 +31,28 @@ export class TagManagerComponent implements OnInit {
         this.auth.loginState.subscribe(loginState => {
             this.userId = loginState.userId;
         });
-        this.rooms.getJoinedRooms().subscribe(joinedRooms => {
+        this.rooms.getRooms().subscribe(joinedRooms => {
             this.loadingRooms = false;
 
             this.rooms.getTags().subscribe(tags => {
-                const sortedRooms = [];
+                const sortedRoomIds = [];
                 for (const tagName of Object.keys(tags)) {
                     let adjustedTagName = tagName;
                     if (tagName === "m.favourite") adjustedTagName = "Favourites";
                     if (tagName === "m.lowpriority") adjustedTagName = "Low Priority";
 
                     if (!this.tags[adjustedTagName]) this.tags[adjustedTagName] = [];
-                    tags[tagName].map(room => {
-                        this.tags[adjustedTagName].push(room.roomId);
-                        sortedRooms.push(room.roomId);
+                    tags[tagName].map(taggedRoom => {
+                        let room = joinedRooms[taggedRoom.roomId];
+                        if (!room) room = {displayName: null, avatarMxc: null, roomId: taggedRoom.roomId};
+                        this.tags[adjustedTagName].push(room);
+                        sortedRoomIds.push(taggedRoom.roomId);
                     });
                 }
-                joinedRooms.filter(rid => !sortedRooms.includes(rid)).map(rid => {
-                    this.tags["Default"].push(rid);
+
+                Object.keys(joinedRooms).filter(rid => !sortedRoomIds.includes(rid)).map(rid => {
+                    const room = joinedRooms[rid];
+                    this.tags["Default"].push(room);
                 });
             });
         });

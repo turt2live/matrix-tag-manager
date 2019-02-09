@@ -13,7 +13,7 @@
         <h4>{{tagName}}</h4>
         <div class="tag-list" dragula="ROOM_TAGS"
              [dragulaModel]="tags[tagName]" (dragulaModelChange)="setTaggedRooms(tagName, $event)">
-            <app-room-tile class="room-tile" *ngFor="let roomId of tags[tagName]" [roomId]="roomId"></app-room-tile>
+            <app-room-tile class="room-tile" *ngFor="let room of tags[tagName]" [room]="room"></app-room-tile>
         </div>
     </div>
     <div class="tag-list-container new">

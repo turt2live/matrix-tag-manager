@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatrixRoomsService } from "../matrix-rooms.service";
 import { MatrixAuthService } from "../matrix-auth.service";
+import { MatrixRoom } from "../matrix-room";
 
 @Component({
     selector: 'app-room-tile',
@@ -10,30 +11,25 @@ import { MatrixAuthService } from "../matrix-auth.service";
 export class RoomTileComponent implements OnInit {
 
     @Input()
-    public roomId: string;
-
-    public avatarUrl: string;
-    public displayName: string;
+    public room: MatrixRoom;
 
     private homeserverUrl: string;
+
+    public get displayName(): string {
+        return this.room.displayName || this.room.roomId;
+    }
+
+    public get avatarUrl(): string {
+        if (!this.room.avatarMxc || !this.homeserverUrl) return null;
+        return `${this.homeserverUrl}/_matrix/media/r0/thumbnail/${this.room.avatarMxc.substring("mxc://".length)}?width=96&height=96&method=crop`;
+    }
 
     constructor(private rooms: MatrixRoomsService, private auth: MatrixAuthService) {
     }
 
     public ngOnInit() {
-        this.displayName = this.roomId;
-
         this.auth.loginState.subscribe(loginState => {
             this.homeserverUrl = loginState.hsUrl;
-        });
-
-        this.rooms.getStateEvent(this.roomId, "m.room.name", "").subscribe(ev => {
-            this.displayName = ev['name'] || `Unamed room: ${this.roomId}`;
-        });
-
-        this.rooms.getStateEvent(this.roomId, "m.room.avatar", "").subscribe(ev => {
-            if (!ev['url']) return;
-            this.avatarUrl = `${this.homeserverUrl}/_matrix/media/r0/thumbnail/${ev['url'].substring("mxc://".length)}?width=96&height=96&method=crop`;
         });
     }
 
