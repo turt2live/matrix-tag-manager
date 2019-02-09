@@ -2,6 +2,10 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.1.
 
+## Docker
+
+Build it yourself with `docker build -t matrix-tag-manager .` or use the prebuilt image: `docker run -p 8080:80 turt2live/matrix-tag-manager`.
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
