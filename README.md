@@ -1,5 +1,7 @@
 # MatrixTagManager
 
+A web interface for supporting power users and their Matrix room tags. For information or assistance, visit [#matrix-tag-manager:t2bot.io](https://matrix.to/#/#matrix-tag-manager:t2bot.io).
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.1.
 
 ## Docker
