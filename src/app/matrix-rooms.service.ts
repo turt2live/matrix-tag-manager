@@ -13,6 +13,10 @@ export interface IRooms {
     [roomId: string]: MatrixRoom;
 }
 
+export interface IDirectChats {
+    [userId: string]: string[];
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -20,12 +24,22 @@ export class MatrixRoomsService {
 
     private homeserverUrl: string;
     private accessToken: string;
+    private userId: string;
 
     constructor(private auth: MatrixAuthService, private http: HttpClient) {
         this.auth.loginState.subscribe(loginState => {
             this.homeserverUrl = loginState.hsUrl;
             this.accessToken = loginState.accessToken;
+            this.userId = loginState.userId;
         });
+    }
+
+    public getDirectChats(): Observable<IDirectChats> {
+        return this.http.get<IDirectChats>(`${this.homeserverUrl}/_matrix/client/r0/user/${this.userId}/account_data/m.direct`, {
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
+        }).pipe(this.auth.logoutIfUnauthorized());
     }
 
     public getRooms(): Observable<IRooms> {

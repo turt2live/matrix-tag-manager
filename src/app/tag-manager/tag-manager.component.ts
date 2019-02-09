@@ -16,6 +16,7 @@ export class TagManagerComponent implements OnInit {
 
     public tags: { [tagName: string]: MatrixRoom[] } = {
         "Favourites": [],
+        "Direct Chats": [],
         "Default": [],
         "Low Priority": [],
     };
@@ -35,6 +36,7 @@ export class TagManagerComponent implements OnInit {
             this.loadingRooms = false;
 
             this.rooms.getTags().subscribe(tags => {
+
                 const sortedRoomIds = [];
                 for (const tagName of Object.keys(tags)) {
                     let adjustedTagName = tagName;
@@ -50,9 +52,24 @@ export class TagManagerComponent implements OnInit {
                     });
                 }
 
-                Object.keys(joinedRooms).filter(rid => !sortedRoomIds.includes(rid)).map(rid => {
-                    const room = joinedRooms[rid];
-                    this.tags["Default"].push(room);
+                this.rooms.getDirectChats().subscribe(chats => {
+                    const directChatRoomIds = [];
+                    for (const userId of Object.keys(chats)) directChatRoomIds.push(...chats[userId]);
+
+                    for (const roomId of directChatRoomIds) {
+                        let room = joinedRooms[roomId];
+                        if (!room) {
+                            console.warn(`Ignoring unknown direct chat: ${roomId}`);
+                            continue;
+                        }
+                        this.tags["Direct Chats"].push(room);
+                        sortedRoomIds.push(roomId);
+                    }
+
+                    Object.keys(joinedRooms).filter(rid => !sortedRoomIds.includes(rid)).map(rid => {
+                        const room = joinedRooms[rid];
+                        this.tags["Default"].push(room);
+                    });
                 });
             });
         });
