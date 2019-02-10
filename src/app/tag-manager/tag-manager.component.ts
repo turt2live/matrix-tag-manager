@@ -114,6 +114,12 @@ export class TagManagerComponent implements OnInit {
         if (originalList.filter(i => !newList.includes(i)).length > 0) return true;
         if (newList.filter(i => !originalList.includes(i)).length > 0) return true;
 
+        for (const room of newList) {
+            const idxA = originalList.indexOf(room);
+            const idxB = newList.indexOf(room);
+            if (idxA !== idxB) return true;
+        }
+
         return false;
     }
 
