@@ -8,7 +8,10 @@
     </span>
 </div>
 
-<div class="tag-container">
+<div class="welcome-row" *ngIf="loadingRooms">
+    Loading your rooms and tags. This could take a while if you have a lot of rooms.
+</div>
+<div class="tag-container" *ngIf="!loadingRooms">
     <div class="tag-list-container" *ngFor="let tagName of tagNames">
         <button type="button" class="float-right button-outline" [disabled]="isSaving"
                 *ngIf="isListChanged(tagName)" (click)="saveTag(tagName)">Save</button>

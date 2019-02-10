@@ -39,10 +39,7 @@ export class TagManagerComponent implements OnInit {
             this.userId = loginState.userId;
         });
         this.rooms.getRooms().subscribe(joinedRooms => {
-            this.loadingRooms = false;
-
             this.rooms.getTags().subscribe(tags => {
-
                 const sortedRoomIds = [];
                 for (const tagName of Object.keys(tags)) {
                     let adjustedTagName = this.translateAdjustedToTag(tagName);
@@ -79,6 +76,8 @@ export class TagManagerComponent implements OnInit {
                     for (const tid of Object.keys(this.tags)) {
                         this.originalTags[tid] = this.tags[tid].map(r => r); // clone
                     }
+
+                    this.loadingRooms = false;
                 });
             });
         });
