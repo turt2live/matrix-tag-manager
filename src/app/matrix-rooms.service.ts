@@ -91,7 +91,6 @@ export class MatrixRoomsService {
     }
 
     public getJoinedRooms(): Observable<string[]> {
-        const userId = encodeURIComponent(this.userId);
         return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/joined_rooms`, {
             headers: {
                 "Authorization": `Bearer ${this.accessToken}`,
@@ -195,14 +194,15 @@ export class MatrixRoomsService {
                     for (const tagName of Object.keys(content['tags'])) {
                         const tag = content['tags'][tagName];
                         if (!resultingTags[tagName]) resultingTags[tagName] = [];
-                        resultingTags[tagName].push({order: tag['order'] || 1, roomId: roomId});
+                        const order = !tag['order'] && tag['order'] !== 0 ? 1 : Number(tag['order']);
+                        resultingTags[tagName].push({order: order, roomId: roomId});
                     }
                 }
             }
 
             // Sort the tags by order
             for (const tagName of Object.keys(resultingTags)) {
-                resultingTags[tagName].sort((a, b) => b.order - a.order);
+                resultingTags[tagName].sort((a, b) => a.order - b.order);
             }
 
             return resultingTags;
