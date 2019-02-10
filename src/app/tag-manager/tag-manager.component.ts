@@ -38,7 +38,11 @@ export class TagManagerComponent implements OnInit {
         this.auth.loginState.subscribe(loginState => {
             this.userId = loginState.userId;
         });
-        this.rooms.getRooms().subscribe(joinedRooms => {
+        this.rooms.getRooms().subscribe(async (joinedRooms) => {
+            const additionalRooms = await this.rooms.getJoinedRooms().toPromise();
+            for (const roomId of additionalRooms) {
+                if (!joinedRooms[roomId]) joinedRooms[roomId] = {displayName: null, avatarMxc: null, roomId};
+            }
             this.rooms.getTags().subscribe(tags => {
                 const sortedRoomIds = [];
                 for (const tagName of Object.keys(tags)) {

@@ -90,6 +90,17 @@ export class MatrixRoomsService {
         }).pipe(this.auth.logoutIfUnauthorized());
     }
 
+    public getJoinedRooms(): Observable<string[]> {
+        const userId = encodeURIComponent(this.userId);
+        return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/joined_rooms`, {
+            headers: {
+                "Authorization": `Bearer ${this.accessToken}`,
+            },
+        }).pipe(this.auth.logoutIfUnauthorized(), map(r => {
+            return r['joined_rooms'] || [];
+        }));
+    }
+
     public getEffectiveJoinedMembers(roomId: string): Observable<string[]> {
         roomId = encodeURIComponent(roomId);
         return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/members`, {
