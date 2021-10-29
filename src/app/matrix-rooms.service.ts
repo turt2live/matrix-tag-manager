@@ -115,18 +115,27 @@ export class MatrixRoomsService {
         }));
     }
 
+    /** Returns all rooms that are named */
     public getRooms(): Observable<IRooms> {
         const filter = {
             presence: {types: [], limit: 0},
             account_data: {types: [], limit: 0},
             room: {
                 ephemeral: {types: [], limit: 0},
-                state: {types: ['m.room.name', 'm.room.avatar']},
+                state: {
+                    // See
+                    // https://matrix.org/docs/spec/client_server/r0.6.1#lazy-loading-room-members
+                    // This only loads members in the timeline, not guaranteed to load all members
+                    lazy_load_members: true,
+                    types: ['m.room.name', 'm.room.avatar']
+                },
                 timeline: {types: [], limit: 0},
                 account_data: {types: [], limit: 0},
             },
         };
         const encodedFilter = encodeURIComponent(JSON.stringify(filter));
+
+        // see https://matrix.org/docs/spec/client_server/r0.6.1#filtering
         return this.http.get(`${this.homeserverUrl}/_matrix/client/r0/sync?filter=${encodedFilter}`, {
             headers: {
                 "Authorization": `Bearer ${this.accessToken}`,
@@ -143,12 +152,31 @@ export class MatrixRoomsService {
 
                 let displayName: string = null;
                 let avatarMxc: string = null;
+                /** List of joined members */
+                let joinedMembers: {avatar_url: string, displayname: string}[] = [];
                 for (const event of room['state']['events']) {
                     if (event['type'] === 'm.room.name' && event['content']) {
                         displayName = event['content']['name'];
                     }
                     if (event['type'] === 'm.room.avatar' && event['content']) {
                         avatarMxc = event['content']['url'];
+                    }
+                    if (event['type'] === 'm.room.member' && event['content']
+                        && event['content']['membership'] === 'join') {
+                        const {avatar_url, displayname}  = event['content'];
+                        joinedMembers.push({avatar_url, displayname});
+                    }
+                }
+
+                // If our room doesn't have a name...
+                if(displayName === null) {
+                    // ...and we have one joined member in the room (eg. in the case of an account
+                    // migration when direct messages become rooms, but no room name)...
+                    if(joinedMembers.length === 1) {
+                        // ...then treat the joined member name as the display name
+                        // (just for our display, doesn't actually set the room name)
+                        displayName = `Unnamed (${joinedMembers[0].displayname})`;
+                        avatarMxc = joinedMembers[0].avatar_url;
                     }
                 }
 
